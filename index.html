@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ludo Legends - Play Online</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <div class="container">
+        <header>
+            <h1>🎲 Ludo Legends</h1>
+            <div class="header-controls">
+                <button id="newGameBtn" class="btn btn-primary">New Game</button>
+                <button id="rulesBtn" class="btn btn-secondary">Rules</button>
+                <button id="sfxToggle" class="btn btn-icon" title="Game Sounds">🔊</button>
+                <button id="voiceToggle" class="btn btn-icon" title="Voice Commentary">🗣️</button>
+            </div>
+        </header>
+
+        <div class="game-setup" id="gameSetup">
+            <h2>Game Setup</h2>
+            <div class="setup-options">
+                <div class="option-group">
+                    <label>Number of Players:</label>
+                    <select id="playerCount">
+                        <option value="2">2 Players</option>
+                        <option value="3">3 Players</option>
+                        <option value="4" selected>4 Players</option>
+                    </select>
+                </div>
+                <div class="option-group">
+                    <label>Game Mode:</label>
+                    <select id="gameMode">
+                        <option value="local">Local Multiplayer</option>
+                        <option value="ai">vs Computer</option>
+                    </select>
+                </div>
+                <div id="aiPlayersSetup" class="option-group" style="display: none;">
+                    <label>AI Players:</label>
+                    <select id="aiCount">
+                        <option value="1">1 AI</option>
+                        <option value="2">2 AI</option>
+                        <option value="3" selected>3 AI</option>
+                    </select>
+                </div>
+            </div>
+            <!-- Player names will be requested after clicking Start (modal) -->
+            <div id="playerNames" class="player-names" style="display:none;"></div>
+            <button id="startGameBtn" class="btn btn-large">Start Game</button>
+        </div>
+
+        <div class="game-container" id="gameContainer" style="display: none;">
+            <div class="players-info">
+                <div class="player-card" id="player0" data-color="red">
+                    <div class="player-avatar" style="background-color: #e74c3c;">🔴</div>
+                    <div class="player-details">
+                        <h3>Red Player</h3>
+                        <p class="player-status">Waiting...</p>
+                    </div>
+                </div>
+                <div class="player-card" id="player1" data-color="green">
+                    <div class="player-avatar" style="background-color: #27ae60;">🟢</div>
+                    <div class="player-details">
+                        <h3>Green Player</h3>
+                        <p class="player-status">Waiting...</p>
+                    </div>
+                </div>
+                <div class="player-card" id="player2" data-color="yellow">
+                    <div class="player-avatar" style="background-color: #f1c40f;">🟡</div>
+                    <div class="player-details">
+                        <h3>Yellow Player</h3>
+                        <p class="player-status">Waiting...</p>
+                    </div>
+                </div>
+                <div class="player-card" id="player3" data-color="blue">
+                    <div class="player-avatar" style="background-color: #3498db;">🔵</div>
+                    <div class="player-details">
+                        <h3>Blue Player</h3>
+                        <p class="player-status">Waiting...</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="game-board-wrapper">
+                <div style="text-align: center; margin-bottom: 10px;">
+                    <p style="font-size: 16px; font-weight: 600; color: #333; margin: 0;">Current Turn</p>
+                    <p id="turnIndicator" style="font-size: 20px; font-weight: 700; color: #667eea; margin: 5px 0;">Red
+                        Player</p>
+                </div>
+                <canvas id="gameBoard" width="600" height="600"></canvas>
+                <div class="dice-container" id="diceContainer">
+                    <div class="dice-scene" id="diceScene">
+                        <div class="dice" id="dice">
+                            <div class="dice-face face-1">1</div>
+                            <div class="dice-face face-2">2</div>
+                            <div class="dice-face face-3">3</div>
+                            <div class="dice-face face-4">4</div>
+                            <div class="dice-face face-5">5</div>
+                            <div class="dice-face face-6">6</div>
+                        </div>
+                    </div>
+                    <button id="rollDiceBtn" class="btn btn-dice">Roll Dice</button>
+                </div>
+            </div>
+
+            <div class="game-info">
+                <div class="game-stats">
+                    <h3>Game Statistics</h3>
+                    <div id="gameStats">
+                        <p>Dice Rolls: <span id="diceRolls">0</span></p>
+                        <p>Total Moves: <span id="totalMoves">0</span></p>
+                        
+                    </div>
+                </div>
+                <div class="game-log" id="gameLog">
+                    <h3>Game Log</h3>
+                    <div id="logMessages"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="modal" id="rulesModal">
+            <div class="modal-content">
+                <span class="close">&times;</span>
+                <h2>Ludo Rules</h2>
+                <div class="rules-content">
+                    <h3>Objective</h3>
+                    <p>Be the first player to move all 4 tokens from home to the center finish area.</p>
+
+                    <h3>How to Play</h3>
+                    <ul>
+                        <li>Each player rolls the dice on their turn</li>
+                        <li>Roll a 6 to bring a token out of home</li>
+                        <li>Rolling a 6 gives you another turn</li>
+                        <li>Move tokens clockwise around the board</li>
+                        <li>Landing on opponent's token sends it back home</li>
+                        <li>Safe spots (marked with stars) protect tokens</li>
+                        <li>Enter home column when you complete the circuit</li>
+                        <li>Exact roll needed to reach center finish</li>
+                    </ul>
+
+                    <h3>Winning</h3>
+                    <p>First player to get all 4 tokens to the center wins!</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Names modal: shown after clicking Start to collect human player names -->
+        <div class="modal" id="namesModal">
+            <div class="modal-content">
+                <span class="close">&times;</span>
+                <h2>Enter Player Names</h2>
+                <div id="namesInputs"></div>
+                <div style="display:flex; gap:10px; justify-content:flex-end; margin-top:20px;">
+                    <button id="cancelNamesBtn" class="btn btn-secondary">Cancel</button>
+                    <button id="confirmNamesBtn" class="btn btn-primary">Start Game</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="modal" id="winnerModal">
+            <div class="modal-content winner-content">
+                <h2>🎉 Congratulations! 🎉</h2>
+                <p id="winnerText"></p>
+                <button id="playAgainBtn" class="btn btn-large">Play Again</button>
+            </div>
+        </div>
+
+        <div id="confetti" aria-hidden="true"></div>
+
+        <footer class="game-footer">
+            <p>Built by <strong>Anup Yadav</strong></p>
+            <div class="signature" aria-hidden="true">
+                <span id="signature" data-text="Anup Yadav"></span><span class="caret" id="signatureCaret">|</span>
+            </div>
+        </footer>
+    </div>
+
+    <script src="game.js"></script>
+</body>
+
+</html>
