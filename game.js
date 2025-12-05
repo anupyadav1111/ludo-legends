@@ -719,6 +719,8 @@ class LudoGame {
         return (usePound ? "#" : "") + (g | (b << 8) | (r << 16)).toString(16).padStart(6, '0');
     }
 
+    // ... inside class LudoGame ...
+
     toggleBoardFullscreen() {
         const isFullscreen = document.body.classList.contains('board-fullscreen');
         const fsBtn = document.getElementById('fullscreenBtn');
@@ -727,16 +729,21 @@ class LudoGame {
             // ENTERING Fullscreen
             document.body.classList.add('board-fullscreen');
             if (fsBtn) {
-                fsBtn.textContent = '⤓'; // Exit fullscreen icon
+                fsBtn.textContent = '⤓';
                 fsBtn.title = 'Exit Fullscreen';
             }
             const el = document.documentElement;
+            // Try to lock orientation to landscape if supported (optional, improves mobile exp)
+            if (screen.orientation && screen.orientation.lock) {
+                // screen.orientation.lock('landscape').catch(() => {}); 
+                // Commented out: usually better to let user rotate manually
+            }
             if (el.requestFullscreen) el.requestFullscreen().catch(() => { });
         } else {
             // EXITING Fullscreen
             document.body.classList.remove('board-fullscreen');
             if (fsBtn) {
-                fsBtn.textContent = '⤢'; // Enter fullscreen icon
+                fsBtn.textContent = '⤢';
                 fsBtn.title = 'Board Fullscreen';
             }
             if (document.fullscreenElement && document.exitFullscreen) {
@@ -744,33 +751,37 @@ class LudoGame {
             }
         }
 
-        // Delay resize to allow CSS transition to finish
-        setTimeout(() => this.handleResize(), 100);
+        // IMPORTANT: Force a resize calculation after the transition
+        // We use a small timeout to let the CSS transition (width/height) finish
+        setTimeout(() => this.handleResize(), 50);
+        setTimeout(() => this.handleResize(), 350); // Safety check
     }
 
     handleResize() {
-        // This function ensures the canvas Resolution matches the CSS Size
-        // preventing blurry text or stretched oval tokens
         const rect = this.canvas.getBoundingClientRect();
 
-        // We want a square canvas. Take the smaller dimension.
-        // In CSS we used vmin, so visually it is square. 
-        // We set internal resolution to match.
+        // Ensure we are getting valid dimensions
+        if (rect.width === 0 || rect.height === 0) return;
+
+        // In fullscreen landscape, CSS sets width = height based on viewport height.
+        // We need to make sure the internal canvas resolution matches this exactly
+        // to prevent oval tokens or blurry text.
+
         const size = Math.floor(Math.min(rect.width, rect.height));
 
-        // Only resize if significantly different to prevent flickering
-        if (Math.abs(this.canvas.width - size) > 5) {
+        // Only update if there is a discrepancy to save resources
+        if (this.canvas.width !== size || this.canvas.height !== size) {
             this.canvas.width = size;
             this.canvas.height = size;
 
-            // We must re-calculate cell size based on new width
+            // Recalculate grid based on new size
             this.boardSize = size;
             this.cellSize = this.boardSize / 15;
 
-            // Recalculate positions based on new cell size
+            // Recalculate path coordinates for the new scale
             this.initializeBoardPaths();
 
-            // Redraw immediately
+            // Redraw
             this.drawBoard();
         }
     }
@@ -790,7 +801,7 @@ class LudoGame {
 
             ctx.beginPath();
             ctx.arc(x, ringY, c * 0.4, 0, Math.PI * 2);
-            ctx.strokeStyle = '#00ff00';
+            ctx.strokeStyle = '#ff66cc';
             ctx.lineWidth = 3;
             ctx.stroke();
             this.drawPulse(x, ringY, c * 0.4);
@@ -802,7 +813,7 @@ class LudoGame {
         const scale = 1 + Math.sin(time) * 0.1;
         this.ctx.beginPath();
         this.ctx.arc(x, y, r * scale, 0, Math.PI * 2);
-        this.ctx.strokeStyle = 'rgba(0, 255, 0, 0.6)';
+        this.ctx.strokeStyle = 'rgba(255,102,204,0.6)';
         this.ctx.lineWidth = 2;
         this.ctx.stroke();
     }
