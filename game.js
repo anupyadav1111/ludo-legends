@@ -201,6 +201,9 @@ class LudoGame {
         document.getElementById('rulesBtn').addEventListener('click', () => this.showRules());
         document.getElementById('sfxToggle').addEventListener('click', () => this.toggleSfx());
         document.getElementById('voiceToggle').addEventListener('click', () => this.toggleVoice());
+        // Fullscreen board toggle (mobile/full immersive view)
+        const fsBtn = document.getElementById('fullscreenBtn');
+        if (fsBtn) fsBtn.addEventListener('click', () => this.toggleBoardFullscreen());
         // Persistence is automatic; no manual save UI needed.
         document.getElementById('playAgainBtn').addEventListener('click', () => this.resetGame());
 
@@ -212,6 +215,25 @@ class LudoGame {
                     e.target.closest('.modal')?.classList.remove('show');
                 }
             });
+        });
+
+        // Sync state if user presses ESC or swipes out of fullscreen
+        document.addEventListener('fullscreenchange', () => {
+            if (!document.fullscreenElement) {
+                document.body.classList.remove('board-fullscreen');
+                const fsBtn = document.getElementById('fullscreenBtn');
+                if (fsBtn) {
+                    fsBtn.textContent = '⤢'; // Reset to enter fullscreen icon
+                    fsBtn.title = 'Board Fullscreen';
+                }
+                // Reset canvas size logic
+                setTimeout(() => this.handleResize(), 100);
+            }
+        });
+
+        // Handle window resizing to keep board sharp
+        window.addEventListener('resize', () => {
+            if (this.gameStarted) this.handleResize();
         });
     }
 
@@ -695,6 +717,62 @@ class LudoGame {
         let g = (num & 0x0000FF) + amt;
         if (g > 255) g = 255; else if (g < 0) g = 0;
         return (usePound ? "#" : "") + (g | (b << 8) | (r << 16)).toString(16).padStart(6, '0');
+    }
+
+    toggleBoardFullscreen() {
+        const isFullscreen = document.body.classList.contains('board-fullscreen');
+        const fsBtn = document.getElementById('fullscreenBtn');
+
+        if (!isFullscreen) {
+            // ENTERING Fullscreen
+            document.body.classList.add('board-fullscreen');
+            if (fsBtn) {
+                fsBtn.textContent = '⤓'; // Exit fullscreen icon
+                fsBtn.title = 'Exit Fullscreen';
+            }
+            const el = document.documentElement;
+            if (el.requestFullscreen) el.requestFullscreen().catch(() => { });
+        } else {
+            // EXITING Fullscreen
+            document.body.classList.remove('board-fullscreen');
+            if (fsBtn) {
+                fsBtn.textContent = '⤢'; // Enter fullscreen icon
+                fsBtn.title = 'Board Fullscreen';
+            }
+            if (document.fullscreenElement && document.exitFullscreen) {
+                document.exitFullscreen().catch(() => { });
+            }
+        }
+
+        // Delay resize to allow CSS transition to finish
+        setTimeout(() => this.handleResize(), 100);
+    }
+
+    handleResize() {
+        // This function ensures the canvas Resolution matches the CSS Size
+        // preventing blurry text or stretched oval tokens
+        const rect = this.canvas.getBoundingClientRect();
+
+        // We want a square canvas. Take the smaller dimension.
+        // In CSS we used vmin, so visually it is square. 
+        // We set internal resolution to match.
+        const size = Math.floor(Math.min(rect.width, rect.height));
+
+        // Only resize if significantly different to prevent flickering
+        if (Math.abs(this.canvas.width - size) > 5) {
+            this.canvas.width = size;
+            this.canvas.height = size;
+
+            // We must re-calculate cell size based on new width
+            this.boardSize = size;
+            this.cellSize = this.boardSize / 15;
+
+            // Recalculate positions based on new cell size
+            this.initializeBoardPaths();
+
+            // Redraw immediately
+            this.drawBoard();
+        }
     }
 
     highlightValidMoves() {
@@ -1192,7 +1270,7 @@ class LudoGame {
         }
     }
 
-    
+
 
     getCurrentPlayer() {
         return this.players[this.currentPlayerIndex];
@@ -1262,6 +1340,7 @@ class LudoGame {
         btn.textContent = this.voiceEnabled ? '🗣️' : '😶';
         if (!this.voiceEnabled) window.speechSynthesis.cancel();
     }
+
     // Add this method inside the LudoGame class
     speak(text) {
         if (!this.voiceEnabled) return;
@@ -1355,7 +1434,7 @@ class LudoGame {
                     card.style.display = 'flex';
                     const nameEl = card.querySelector('.player-details h3');
                     const statusEl = card.querySelector('.player-status');
-                    if (nameEl) nameEl.textContent = p.name || `Player ${i+1}`;
+                    if (nameEl) nameEl.textContent = p.name || `Player ${i + 1}`;
                     if (statusEl) statusEl.textContent = p.isAI ? 'CPU' : 'Human';
                 } else {
                     // hide cards for players not participating

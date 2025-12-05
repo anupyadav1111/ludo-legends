@@ -951,6 +951,143 @@ header h1 {
     position: relative;
 }
 
+/* Fullscreen button styled as a cut/cornered square positioned at board top-right */
+.board-fs-btn {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    width: 48px;
+    height: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(180deg, rgba(255,255,255,0.98), rgba(245,245,250,0.9));
+    border: 2px solid rgba(0,0,0,0.08);
+    color: #333;
+    font-weight: 700;
+    font-size: 18px;
+    cursor: pointer;
+    z-index: 1500;
+    box-shadow: 0 6px 18px rgba(0,0,0,0.12);
+    transition: transform 0.18s ease, box-shadow 0.18s ease;
+    /* Cut the bottom-right corner to make a 'cutted square' */
+    clip-path: polygon(0 0, 100% 0, 100% 72%, 72% 100%, 0 100%);
+    border-radius: 6px;
+}
+
+.board-fs-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 25px rgba(0,0,0,0.18);
+}
+
+/* Smaller on narrow screens */
+@media (max-width: 600px) {
+    .board-fs-btn {
+        width: 42px;
+        height: 42px;
+        top: 8px;
+        right: 8px;
+        font-size: 16px;
+    }
+}
+
+/* --- FULLSCREEN MODE FIXES --- */
+
+body.board-fullscreen {
+    overflow: hidden;
+    background: #1a1a2e; /* Dark background for focus */
+}
+
+body.board-fullscreen .container {
+    max-width: none;
+    width: 100vw;
+    height: 100dvh; /* Use dvh for mobile URL bar handling */
+    padding: 0;
+    margin: 0;
+    border-radius: 0;
+    background: transparent;
+    box-shadow: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Hide UI elements */
+body.board-fullscreen header,
+body.board-fullscreen .players-info,
+body.board-fullscreen .game-info,
+body.board-fullscreen .game-footer,
+body.board-fullscreen .signature,
+body.board-fullscreen .game-setup {
+    display: none !important;
+}
+
+body.board-fullscreen .game-container {
+    grid-template-columns: 1fr !important;
+    gap: 0 !important;
+    width: 100%;
+    height: 100%;
+    display: flex !important;
+    align-items: center;
+    justify-content: center;
+}
+
+body.board-fullscreen .game-board-wrapper {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+}
+
+/* THE FIX: Force Aspect Ratio using vmin */
+body.board-fullscreen #gameBoard {
+    /* 95% of whichever is smaller (width or height) */
+    width: 95vmin !important; 
+    height: 95vmin !important;
+    max-width: none !important;
+    max-height: none !important;
+    border-radius: 4px !important;
+    box-shadow: 0 0 50px rgba(0,0,0,0.5);
+    margin: 0 auto;
+}
+
+/* Dice positioning in fullscreen */
+body.board-fullscreen .dice-container {
+    position: absolute !important;
+    /* Place it nicely depending on orientation */
+    bottom: 5vmin !important;
+    right: 5vmin !important;
+    width: 12vmin !important;
+    max-width: 80px !important;
+    padding: 10px !important;
+    background: rgba(255, 255, 255, 0.9);
+    z-index: 100;
+    left: auto !important;
+    transform: none !important;
+}
+
+body.board-fullscreen .dice-scene { 
+    width: 100%; 
+    height: 60px; 
+}
+
+/* Ensure fullscreen button stays visible and prominent during fullscreen mode */
+body.board-fullscreen .board-fs-btn {
+    background: rgba(255, 255, 255, 0.95);
+    border: 2px solid rgba(255, 255, 255, 0.4);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+    z-index: 2000;
+}
+
+body.board-fullscreen .board-fs-btn:hover {
+    background: rgba(255, 255, 255, 1);
+    transform: translateY(-3px);
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.4);
+}
+
 /* Active player glow around the board */
 .game-board-wrapper.board-glow {
     transition: box-shadow 0.35s ease, outline-color 0.35s ease;
