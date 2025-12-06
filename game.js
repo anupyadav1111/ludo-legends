@@ -1135,6 +1135,15 @@ class LudoGame {
             loops++;
         } while (this.getCurrentPlayer().finishedTokens === 4 && loops < 4);
 
+        // Check if all players have finished (game over)
+        const allFinished = this.players.every(p => p.finishedTokens === 4);
+        if (allFinished) {
+            // Game has concluded naturally; no winner to declare (shouldn't reach here)
+            // But if it does, just end gracefully
+            this.gameStarted = false;
+            return;
+        }
+
         this.updateTurnIndicator();
         this.drawBoard();
 
